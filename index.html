@@ -54,7 +54,14 @@
     <form id="pedidoForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <input type="text" placeholder="Título" id="titulo" class="input" required>
       <input type="text" placeholder="CPF do cliente" id="cpf" class="input" required>
-      <input type="text" placeholder="Status" id="status" class="input" required>
+<select id="status" class="input" required>
+  <option value="">Selecione o status</option>
+  <option value="Em aberto">Em aberto</option>
+  <option value="Em produção">Em produção</option>
+  <option value="Em teste">Em teste</option>
+  <option value="Finalizado">Finalizado</option>
+  <option value="Entregue">Entregue</option>
+</select>
       <input type="date" placeholder="Data de Entrega" id="dataEntrega" class="input">
       <textarea placeholder="Observações" id="observacoes" rows="3" class="input md:col-span-2"></textarea>
       <input type="file" id="arquivo" class="md:col-span-2">
