@@ -58,12 +58,31 @@
         const pedido = doc.data();
         const div = document.createElement("div");
         div.className = "p-4 bg-gray-800 rounded-lg";
-        div.innerHTML = `
-          <h3 class="font-bold">${pedido.titulo}</h3>
-          <p>Status: ${pedido.status}</p>
-          <p>Entrega: ${pedido.dataEntrega}</p>
-          <p>Observações: ${pedido.observacoes}</p>
-        `;
+        // Cor dinâmica do status
+let statusColorClass = '';
+switch (pedido.status?.toLowerCase()) {
+  case 'em aberto':
+    statusColorClass = 'text-green-400';
+    break;
+  case 'em teste':
+  case 'desenvolvendo':
+    statusColorClass = 'text-yellow-400';
+    break;
+  case 'entregue':
+  case 'finalizado':
+    statusColorClass = 'text-red-400';
+    break;
+  default:
+    statusColorClass = 'text-gray-400';
+}
+
+div.innerHTML = `
+  <h3 class="font-bold">${pedido.titulo}</h3>
+  <p>Status: <span class="${statusColorClass} font-semibold">${pedido.status}</span></p>
+  <p>Entrega: ${pedido.dataEntrega}</p>
+  <p>Observações: ${pedido.observacoes}</p>
+`;
+
         pedidoLista.appendChild(div);
       });
     });
