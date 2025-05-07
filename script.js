@@ -16,6 +16,29 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// Tela de login
+const loginForm = document.getElementById("adminLoginForm");
+const clientLoginForm = document.getElementById("clientLoginForm");
+
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPassword").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      // Exibir painel de admin após login bem-sucedido
+      loginForm.parentElement.classList.add("hidden");
+      document.getElementById("adminPanel").classList.remove("hidden");
+      listarPedidos(); // Carregar pedidos
+    })
+    .catch((error) => {
+      alert("Erro ao fazer login! Verifique seu e-mail ou senha.");
+    });
+});
+
 // Função para cadastrar pedidos
 document.getElementById("pedidoForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -35,7 +58,6 @@ document.getElementById("pedidoForm").addEventListener("submit", async (e) => {
     observacoes
   });
 
-  // Limpar o formulário após salvar
   document.getElementById("pedidoForm").reset();
   alert("Pedido cadastrado com sucesso!");
   listarPedidos();
@@ -46,7 +68,7 @@ async function listarPedidos() {
   const pedidosRef = collection(db, "pedidos");
   const querySnapshot = await getDocs(pedidosRef);
   const pedidoLista = document.getElementById("pedidoLista");
-  pedidoLista.innerHTML = ""; // Limpar a lista atual
+  pedidoLista.innerHTML = ""; // Limpar a lista
 
   querySnapshot.forEach((doc) => {
     const pedido = doc.data();
@@ -80,6 +102,3 @@ async function editarStatus(pedidoId) {
     listarPedidos(); // Atualiza a lista de pedidos
   }
 }
-
-// Carregar pedidos ao acessar o painel admin
-listarPedidos();
