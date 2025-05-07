@@ -21,21 +21,25 @@ const loginForm = document.getElementById("adminLoginForm");
 const clientLoginForm = document.getElementById("clientLoginForm");
 
 loginForm.addEventListener("submit", (e) => {
-  e.preventDefault();
+  e.preventDefault(); // Prevenir o envio padrão do formulário que recarregaria a página
 
   const email = document.getElementById("adminEmail").value;
   const password = document.getElementById("adminPassword").value;
 
+  // Realizando login
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       const user = userCredential.user;
-      // Exibir painel de admin após login bem-sucedido
-      loginForm.parentElement.classList.add("hidden");
+
+      // Após login, ocultar o formulário de login e mostrar o painel de administração
+      document.getElementById("login").classList.add("hidden");
       document.getElementById("adminPanel").classList.remove("hidden");
-      listarPedidos(); // Carregar pedidos após login
+
+      listarPedidos(); // Carregar os pedidos após o login
     })
     .catch((error) => {
-      alert("Erro ao fazer login! Verifique seu e-mail ou senha.");
+      const errorMessage = error.message;
+      alert("Erro ao fazer login: " + errorMessage);
     });
 });
 
