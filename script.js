@@ -50,10 +50,27 @@ async function listarPedidos() {
     const pedidoElement = document.createElement("div");
     pedidoElement.classList.add("p-4", "bg-gray-800", "rounded-lg");
 
+    // Definir a cor do status
+    let statusColor;
+    switch (pedido.status) {
+      case 'Em Aberto':
+        statusColor = 'text-green-500'; // Verde
+        break;
+      case 'Em Teste':
+        statusColor = 'text-orange-500'; // Laranja
+        break;
+      case 'Entregue':
+        statusColor = 'text-red-500'; // Vermelho
+        break;
+      default:
+        statusColor = 'text-gray-400'; // Cor padrão para outros status
+        break;
+    }
+
     pedidoElement.innerHTML = `
       <h3 class="font-bold">${pedido.titulo}</h3>
       <p>CPF: ${pedido.cpf}</p>
-      <p>Status: ${pedido.status}</p>
+      <p>Status: <span class="${statusColor}">${pedido.status}</span></p>
       <p>Data de Entrega: ${pedido.dataEntrega}</p>
       <p>Observações: ${pedido.observacoes}</p>
       <button onclick="editarStatus('${doc.id}')" class="btn-blue mt-2">Alterar Status</button>
@@ -62,6 +79,7 @@ async function listarPedidos() {
     pedidoLista.appendChild(pedidoElement);
   });
 }
+
 
 // Função para editar o status de um pedido
 async function editarStatus(pedidoId) {
