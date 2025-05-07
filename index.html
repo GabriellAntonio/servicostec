@@ -82,7 +82,7 @@
     }
 
     // Função para editar o status de um pedido
-    async function editarStatus(pedidoId) {
+    window.editarStatus = async function(pedidoId) {
       const novoStatus = prompt("Digite o novo status (Ex: Em aberto, Finalizado, etc.):");
 
       if (novoStatus) {
@@ -94,7 +94,7 @@
         alert("Status atualizado!");
         listarPedidos(); // Atualiza a lista de pedidos
       }
-    }
+    };
   </script>
 
 </head>
