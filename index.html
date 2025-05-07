@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Gabriel TEC</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-white font-sans">
+
+  <!-- Tela de login -->
+  <div id="login" class="min-h-screen flex items-center justify-center">
+    <div class="bg-gray-800 p-6 rounded-lg w-full max-w-sm">
+      <h2 class="text-2xl font-bold mb-4 text-center">Login - Gabriel TEC</h2>
+
+      <!-- Admin -->
+      <form id="adminLoginForm" class="space-y-4">
+        <div>
+          <label class="block mb-1">E-mail (Admin)</label>
+          <input type="email" id="adminEmail" class="input" required>
+        </div>
+        <div>
+          <label class="block mb-1">Senha</label>
+          <input type="password" id="adminPassword" class="input" required>
+        </div>
+        <button type="submit" class="btn-blue">Entrar como Admin</button>
+      </form>
+
+      <hr class="my-6 border-gray-600">
+
+      <!-- Cliente -->
+      <form id="clientLoginForm" class="space-y-4">
+        <div>
+          <label class="block mb-1">CPF (Cliente)</label>
+          <input type="text" id="clientCPF" maxlength="14" placeholder="000.000.000-00" class="input" required>
+        </div>
+        <button type="submit" class="btn-green">Acessar Pedidos</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Painel Cliente -->
+  <div id="clientPanel" class="hidden p-4">
+    <h2 class="text-2xl font-bold mb-4">Seus Pedidos</h2>
+    <div id="pedidoLista" class="grid gap-4"></div>
+    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
+  </div>
+
+  <!-- Painel Admin -->
+  <div id="adminPanel" class="hidden p-4">
+    <h2 class="text-2xl font-bold mb-4">Cadastrar Pedido</h2>
+    <form id="pedidoForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input type="text" placeholder="Título" id="titulo" class="input" required>
+      <input type="text" placeholder="CPF do cliente" id="cpf" class="input" required>
+      <input type="text" placeholder="Status" id="status" class="input" required>
+      <input type="date" placeholder="Data de Entrega" id="dataEntrega" class="input">
+      <textarea placeholder="Observações" id="observacoes" rows="3" class="input md:col-span-2"></textarea>
+      <input type="file" id="arquivo" class="md:col-span-2">
+      <button type="submit" class="btn-blue md:col-span-2">Salvar Pedido</button>
+    </form>
+    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
+  </div>
+
+  <!-- Script -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
