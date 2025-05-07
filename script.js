@@ -1,104 +1,95 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, doc } from "firebase/firestore";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDepprbeNpba8COCLSkAH0xXA3nIqvlUHg",
   authDomain: "painel-gabrieltec-6420b.firebaseapp.com",
   projectId: "painel-gabrieltec-6420b",
-  storageBucket: "painel-gabrieltec-6420b.firebasestorage.app",
+  storageBucket: "painel-gabrieltec-6420b.appspot.com",
   messagingSenderId: "919129799689",
   appId: "1:919129799689:web:b8a3fb4049cd201e7a0cd8"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-// Tela de login
-const loginForm = document.getElementById("adminLoginForm");
-const clientLoginForm = document.getElementById("clientLoginForm");
-
-loginForm.addEventListener("submit", (e) => {
+// Admin Login
+document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const email = document.getElementById("adminEmail").value;
   const password = document.getElementById("adminPassword").value;
-
-  signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      const user = userCredential.user;
-      // Exibir painel de admin após login bem-sucedido
-      loginForm.parentElement.classList.add("hidden");
-      document.getElementById("adminPanel").classList.remove("hidden");
-      listarPedidos(); // Carregar pedidos
-    })
-    .catch((error) => {
-      alert("Erro ao fazer login! Verifique seu e-mail ou senha.");
-    });
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+  } catch (error) {
+    alert("Erro no login do admin: " + error.message);
+  }
 });
 
-// Função para cadastrar pedidos
+// Cliente Login
+document.getElementById("clientLoginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const cpf = document.getElementById("clientCPF").value;
+  try {
+    const q = query(collection(db, "pedidos"), where("cpf", "==", cpf));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+      alert("Nenhum pedido encontrado para este CPF.");
+    } else {
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("clientPanel").classList.remove("hidden");
+      const lista = document.getElementById("pedidoLista");
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const card = document.createElement("div");
+        card.className = "bg-gray-800 p-4 rounded border border-gray-700";
+        card.innerHTML = `
+          <h3 class="text-lg font-bold mb-1">${data.titulo}</h3>
+          <p><strong>Status:</strong> ${data.status}</p>
+          <p><strong>Entrega:</strong> ${data.dataEntrega || "-"}</p>
+          <p><strong>Obs.:</strong> ${data.observacoes || "-"}</p>
+          ${data.arquivo ? `<a href="${data.arquivo}" target="_blank" class="text-blue-400 underline">Ver arquivo</a>` : ""}
+        `;
+        lista.appendChild(card);
+      });
+    }
+  } catch (error) {
+    alert("Erro ao buscar pedidos: " + error.message);
+  }
+});
+
+// Cadastrar pedido
 document.getElementById("pedidoForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const titulo = document.getElementById("titulo").value;
   const cpf = document.getElementById("cpf").value;
   const status = document.getElementById("status").value;
   const dataEntrega = document.getElementById("dataEntrega").value;
   const observacoes = document.getElementById("observacoes").value;
+  const arquivo = document.getElementById("arquivo").files[0];
 
-  // Adicionar o pedido no Firestore
+  let url = "";
+  if (arquivo) {
+    const storageRef = ref(storage, `arquivos/${Date.now()}-${arquivo.name}`);
+    const snapshot = await uploadBytes(storageRef, arquivo);
+    url = await getDownloadURL(snapshot.ref);
+  }
+
   await addDoc(collection(db, "pedidos"), {
     titulo,
     cpf,
     status,
     dataEntrega,
-    observacoes
+    observacoes,
+    arquivo: url || null,
+    criadoEm: new Date()
   });
 
-  document.getElementById("pedidoForm").reset();
   alert("Pedido cadastrado com sucesso!");
-  listarPedidos();
+  document.getElementById("pedidoForm").reset();
 });
-
-// Função para listar pedidos
-async function listarPedidos() {
-  const pedidosRef = collection(db, "pedidos");
-  const querySnapshot = await getDocs(pedidosRef);
-  const pedidoLista = document.getElementById("pedidoLista");
-  pedidoLista.innerHTML = ""; // Limpar a lista
-
-  querySnapshot.forEach((doc) => {
-    const pedido = doc.data();
-    const pedidoElement = document.createElement("div");
-    pedidoElement.classList.add("p-4", "bg-gray-800", "rounded-lg");
-
-    pedidoElement.innerHTML = `
-      <h3 class="font-bold">${pedido.titulo}</h3>
-      <p>CPF: ${pedido.cpf}</p>
-      <p>Status: ${pedido.status}</p>
-      <p>Data de Entrega: ${pedido.dataEntrega}</p>
-      <p>Observações: ${pedido.observacoes}</p>
-      <button onclick="editarStatus('${doc.id}')" class="btn-blue mt-2">Alterar Status</button>
-    `;
-
-    pedidoLista.appendChild(pedidoElement);
-  });
-}
-
-// Função para editar o status de um pedido
-async function editarStatus(pedidoId) {
-  const novoStatus = prompt("Digite o novo status (Ex: Em aberto, Finalizado, etc.):");
-
-  if (novoStatus) {
-    const pedidoRef = doc(db, "pedidos", pedidoId);
-    await updateDoc(pedidoRef, {
-      status: novoStatus
-    });
-
-    alert("Status atualizado!");
-    listarPedidos(); // Atualiza a lista de pedidos
-  }
-}
