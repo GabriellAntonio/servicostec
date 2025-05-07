@@ -76,4 +76,33 @@ async function editarStatus(pedidoId) {
     alert("Status atualizado!");
     listarPedidos(); // Atualiza a lista de pedidos
   }
+  document.addEventListener("DOMContentLoaded", () => {
+  // Código do Firebase e login aqui
+
+  // Função para login do Admin
+  document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
+    e.preventDefault(); // Impede o comportamento padrão de envio do formulário
+
+    const email = document.getElementById("adminEmail").value;
+    const password = document.getElementById("adminPassword").value;
+
+    // Realiza o login do admin
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log('Admin logado com sucesso:', user);
+
+        // Esconder a tela de login e mostrar o painel de administração
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("adminPanel").classList.remove("hidden");
+
+        listarPedidos(); // Carregar os pedidos ao fazer login
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        alert('Erro ao fazer login: ' + errorMessage); // Exibe o erro se falhar
+      });
+  });
+});
+
 }
