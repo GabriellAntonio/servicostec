@@ -1,11 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <!-- Outros links, como o do Tailwind CSS, já estão aqui -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Gabriel TEC</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="/logo.ico" />
   
-  <!-- Adicionando os scripts do Firebase CDN como módulos -->
+  <!-- Script Firebase (importação via CDN) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
     
     // Configuração do Firebase
     const firebaseConfig = {
@@ -23,28 +30,30 @@
     const db = getFirestore(app);
 
     // Função para Login Admin
-    document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
-      e.preventDefault(); // Evita o reload da página ao submeter o formulário de login
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
+        e.preventDefault(); // Evita o reload da página ao submeter o formulário de login
 
-      const email = document.getElementById("adminEmail").value;
-      const password = document.getElementById("adminPassword").value;
+        const email = document.getElementById("adminEmail").value;
+        const password = document.getElementById("adminPassword").value;
 
-      // Realiza o login do admin
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          console.log('Admin logado com sucesso:', user);
+        // Realiza o login do admin
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            console.log('Admin logado com sucesso:', user);
 
-          // Ocultar a tela de login e mostrar o painel de administração
-          document.getElementById("login").classList.add("hidden");
-          document.getElementById("adminPanel").classList.remove("hidden");
+            // Ocultar a tela de login e mostrar o painel de administração
+            document.getElementById("login").classList.add("hidden");
+            document.getElementById("adminPanel").classList.remove("hidden");
 
-          listarPedidos(); // Carregar os pedidos ao fazer login
-        })
-        .catch((error) => {
-          const errorMessage = error.message;
-          alert('Erro ao fazer login: ' + errorMessage); // Mostra o erro se falhar
-        });
+            listarPedidos(); // Carregar os pedidos ao fazer login
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
+            alert('Erro ao fazer login: ' + errorMessage); // Mostra o erro se falhar
+          });
+      });
     });
 
     // Função para listar pedidos do banco
@@ -87,4 +96,36 @@
       }
     }
   </script>
+
 </head>
+<body class="bg-gray-900 text-white font-sans">
+
+  <!-- Tela de login -->
+  <div id="login" class="min-h-screen flex items-center justify-center">
+    <div class="bg-gray-800 p-6 rounded-lg w-full max-w-sm">
+      <h2 class="text-2xl font-bold mb-4 text-center">Login - Gabriel TEC</h2>
+
+      <!-- Admin -->
+      <form id="adminLoginForm" class="space-y-4">
+        <div>
+          <label class="block mb-1">E-mail (Admin)</label>
+          <input type="email" id="adminEmail" class="input" required>
+        </div>
+        <div>
+          <label class="block mb-1">Senha</label>
+          <input type="password" id="adminPassword" class="input" required>
+        </div>
+        <button type="submit" class="btn-blue">Entrar como Admin</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Painel Admin -->
+  <div id="adminPanel" class="hidden p-4">
+    <h2 class="text-2xl font-bold mb-4">Pedidos Cadastrados</h2>
+    <div id="pedidoLista" class="grid gap-4"></div>
+    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
+  </div>
+
+</body>
+</html>
