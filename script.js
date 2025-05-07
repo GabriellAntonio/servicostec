@@ -13,114 +13,81 @@ const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Função para Login Admin
-document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
-  e.preventDefault(); // Evita o reload da página ao submeter o formulário de login
+// Função para login do admin
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  const email = document.getElementById("adminEmail").value;
-  const password = document.getElementById("adminPassword").value;
+    const email = document.getElementById("adminEmail").value;
+    const password = document.getElementById("adminPassword").value;
 
-  // Realiza o login do admin
-  auth.signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      const user = userCredential.user;
-      console.log('Admin logado com sucesso:', user);
+    auth.signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log('Admin logado com sucesso:', user);
 
-      // Ocultar a tela de login e mostrar o painel de administração
-      document.getElementById("login").classList.add("hidden");
-      document.getElementById("adminPanel").classList.remove("hidden");
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("adminPanel").classList.remove("hidden");
 
-      listarPedidos(); // Carregar os pedidos ao fazer login
-    })
-    .catch((error) => {
-      const errorMessage = error.message;
-      alert('Erro ao fazer login: ' + errorMessage); // Mostra o erro se falhar
-    });
+        listarPedidos();
+      })
+      .catch((error) => {
+        alert('Erro ao fazer login: ' + error.message);
+      });
+  });
 });
 
-// Função para listar pedidos do banco
+// Função para listar os pedidos
 async function listarPedidos() {
   const pedidosRef = db.collection("pedidos");
   const querySnapshot = await pedidosRef.get();
   const pedidoLista = document.getElementById("pedidoLista");
-  pedidoLista.innerHTML = ""; // Limpar a lista antes de adicionar os novos pedidos
+  pedidoLista.innerHTML = "";
 
   querySnapshot.forEach((doc) => {
     const pedido = doc.data();
     const pedidoElement = document.createElement("div");
-    pedidoElement.classList.add("p-4", "bg-gray-800", "rounded-lg");
+    pedidoElement.classList.add("p-4", "bg-gray-800", "rounded-lg", "mb-4");
 
-    // Definir a cor do status
-    let statusColor;
-    switch (pedido.status) {
-      case 'Em Aberto':
-        statusColor = 'text-green-500'; // Verde
+    // Cor dinâmica do status
+    let statusColorClass;
+    switch (pedido.status.toLowerCase()) {
+      case 'em aberto':
+        statusColorClass = 'text-green-400';
         break;
-      case 'Em Teste':
-        statusColor = 'text-orange-500'; // Laranja
+      case 'em teste':
+        statusColorClass = 'text-yellow-400';
         break;
-      case 'Entregue':
-        statusColor = 'text-red-500'; // Vermelho
+      case 'entregue':
+        statusColorClass = 'text-red-400';
         break;
       default:
-        statusColor = 'text-gray-400'; // Cor padrão para outros status
+        statusColorClass = 'text-gray-400';
         break;
     }
 
     pedidoElement.innerHTML = `
-      <h3 class="font-bold">${pedido.titulo}</h3>
-      <p>CPF: ${pedido.cpf}</p>
-      <p>Status: <span class="${statusColor}">${pedido.status}</span></p>
-      <p>Data de Entrega: ${pedido.dataEntrega}</p>
-      <p>Observações: ${pedido.observacoes}</p>
-      <button onclick="editarStatus('${doc.id}')" class="btn-blue mt-2">Alterar Status</button>
+      <h3 class="font-bold text-white">${pedido.titulo}</h3>
+      <p class="text-white">CPF: ${pedido.cpf}</p>
+      <p class="text-white">Status: <span class="${statusColorClass} font-semibold">${pedido.status}</span></p>
+      <p class="text-white">Data de Entrega: ${pedido.dataEntrega}</p>
+      <p class="text-white">Observações: ${pedido.observacoes}</p>
+      <button onclick="editarStatus('${doc.id}')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Alterar Status</button>
     `;
 
     pedidoLista.appendChild(pedidoElement);
   });
 }
 
-
-// Função para editar o status de um pedido
+// Função para editar o status
 async function editarStatus(pedidoId) {
-  const novoStatus = prompt("Digite o novo status (Ex: Em aberto, Finalizado, etc.):");
+  const novoStatus = prompt("Digite o novo status (Ex: Em Aberto, Em Teste, Entregue):");
 
   if (novoStatus) {
     const pedidoRef = db.collection("pedidos").doc(pedidoId);
-    await pedidoRef.update({
-      status: novoStatus
-    });
+    await pedidoRef.update({ status: novoStatus });
 
     alert("Status atualizado!");
-    listarPedidos(); // Atualiza a lista de pedidos
+    listarPedidos();
   }
-  document.addEventListener("DOMContentLoaded", () => {
-  // Código do Firebase e login aqui
-
-  // Função para login do Admin
-  document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
-    e.preventDefault(); // Impede o comportamento padrão de envio do formulário
-
-    const email = document.getElementById("adminEmail").value;
-    const password = document.getElementById("adminPassword").value;
-
-    // Realiza o login do admin
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log('Admin logado com sucesso:', user);
-
-        // Esconder a tela de login e mostrar o painel de administração
-        document.getElementById("login").classList.add("hidden");
-        document.getElementById("adminPanel").classList.remove("hidden");
-
-        listarPedidos(); // Carregar os pedidos ao fazer login
-      })
-      .catch((error) => {
-        const errorMessage = error.message;
-        alert('Erro ao fazer login: ' + errorMessage); // Exibe o erro se falhar
-      });
-  });
-});
-
 }
