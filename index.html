@@ -1,86 +1,90 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Gabriel TEC</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="/logo.ico" />
-  <head>
   <!-- Outros links, como o do Tailwind CSS, já estão aqui -->
   
-  <!-- Adicionando os scripts do Firebase CDN -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <!-- Adicionando os scripts do Firebase CDN como módulos -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDepprbeNpba8COCLSkAH0xXA3nIqvlUHg",
+      authDomain: "painel-gabrieltec-6420b.firebaseapp.com",
+      projectId: "painel-gabrieltec-6420b",
+      storageBucket: "painel-gabrieltec-6420b.firebasestorage.app",
+      messagingSenderId: "919129799689",
+      appId: "1:919129799689:web:b8a3fb4049cd201e7a0cd8"
+    };
 
+    // Inicializando Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Função para Login Admin
+    document.getElementById("adminLoginForm").addEventListener("submit", (e) => {
+      e.preventDefault(); // Evita o reload da página ao submeter o formulário de login
+
+      const email = document.getElementById("adminEmail").value;
+      const password = document.getElementById("adminPassword").value;
+
+      // Realiza o login do admin
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log('Admin logado com sucesso:', user);
+
+          // Ocultar a tela de login e mostrar o painel de administração
+          document.getElementById("login").classList.add("hidden");
+          document.getElementById("adminPanel").classList.remove("hidden");
+
+          listarPedidos(); // Carregar os pedidos ao fazer login
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          alert('Erro ao fazer login: ' + errorMessage); // Mostra o erro se falhar
+        });
+    });
+
+    // Função para listar pedidos do banco
+    async function listarPedidos() {
+      const pedidosRef = collection(db, "pedidos");
+      const querySnapshot = await getDocs(pedidosRef);
+      const pedidoLista = document.getElementById("pedidoLista");
+      pedidoLista.innerHTML = ""; // Limpar a lista antes de adicionar os novos pedidos
+
+      querySnapshot.forEach((doc) => {
+        const pedido = doc.data();
+        const pedidoElement = document.createElement("div");
+        pedidoElement.classList.add("p-4", "bg-gray-800", "rounded-lg");
+
+        pedidoElement.innerHTML = `
+          <h3 class="font-bold">${pedido.titulo}</h3>
+          <p>CPF: ${pedido.cpf}</p>
+          <p>Status: ${pedido.status}</p>
+          <p>Data de Entrega: ${pedido.dataEntrega}</p>
+          <p>Observações: ${pedido.observacoes}</p>
+          <button onclick="editarStatus('${doc.id}')" class="btn-blue mt-2">Alterar Status</button>
+        `;
+
+        pedidoLista.appendChild(pedidoElement);
+      });
+    }
+
+    // Função para editar o status de um pedido
+    async function editarStatus(pedidoId) {
+      const novoStatus = prompt("Digite o novo status (Ex: Em aberto, Finalizado, etc.):");
+
+      if (novoStatus) {
+        const pedidoRef = doc(db, "pedidos", pedidoId);
+        await updateDoc(pedidoRef, {
+          status: novoStatus
+        });
+
+        alert("Status atualizado!");
+        listarPedidos(); // Atualiza a lista de pedidos
+      }
+    }
+  </script>
 </head>
-
-</head>
-<body class="bg-gray-900 text-white font-sans">
-
-  <!-- Tela de login -->
-  <div id="login" class="min-h-screen flex items-center justify-center">
-    <div class="bg-gray-800 p-6 rounded-lg w-full max-w-sm">
-      <h2 class="text-2xl font-bold mb-4 text-center">Login - Gabriel TEC</h2>
-
-      <!-- Admin -->
-      <form id="adminLoginForm" class="space-y-4">
-        <div>
-          <label class="block mb-1">E-mail (Admin)</label>
-          <input type="email" id="adminEmail" class="input" required>
-        </div>
-        <div>
-          <label class="block mb-1">Senha</label>
-          <input type="password" id="adminPassword" class="input" required>
-        </div>
-        <button type="submit" class="btn-blue">Entrar como Admin</button>
-      </form>
-
-      <hr class="my-6 border-gray-600">
-
-      <!-- Cliente -->
-      <form id="clientLoginForm" class="space-y-4">
-        <div>
-          <label class="block mb-1">CPF (Cliente)</label>
-          <input type="text" id="clientCPF" maxlength="14" placeholder="000.000.000-00" class="input" required>
-        </div>
-        <button type="submit" class="btn-green">Acessar Pedidos</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Painel Cliente -->
-  <div id="clientPanel" class="hidden p-4">
-    <h2 class="text-2xl font-bold mb-4">Seus Pedidos</h2>
-    <div id="pedidoLista" class="grid gap-4"></div>
-    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
-  </div>
-
-  <!-- Painel Admin -->
-  <div id="adminPanel" class="hidden p-4">
-    <h2 class="text-2xl font-bold mb-4">Cadastrar Pedido</h2>
-    <form id="pedidoForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <input type="text" placeholder="Título" id="titulo" class="input" required>
-      <input type="text" placeholder="CPF do cliente" id="cpf" class="input" required>
-<select id="status" class="input" required>
-  <option value="">Selecione o status</option>
-  <option value="Em aberto">Em aberto</option>
-  <option value="Em produção">Em produção</option>
-  <option value="Em teste">Em teste</option>
-  <option value="Finalizado">Finalizado</option>
-  <option value="Entregue">Entregue</option>
-</select>
-      <input type="date" placeholder="Data de Entrega" id="dataEntrega" class="input">
-      <textarea placeholder="Observações" id="observacoes" rows="3" class="input md:col-span-2"></textarea>
-      <input type="file" id="arquivo" class="md:col-span-2">
-      <button type="submit" class="btn-blue md:col-span-2">Salvar Pedido</button>
-    </form>
-    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
-  </div>
-
-  <!-- Script -->
-  <script type="module" src="script.js"></script>
-</body>
-</html>
