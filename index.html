@@ -54,6 +54,22 @@
             alert('Erro ao fazer login: ' + errorMessage); // Mostra o erro se falhar
           });
       });
+
+      // Exibir o painel do cliente se o CPF for inserido corretamente
+      document.getElementById("clientLoginForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const cpf = document.getElementById("clientCPF").value;
+        if (cpf) {
+          // Verifique no banco de dados se o cliente existe, se necessário
+          document.getElementById("login").classList.add("hidden");
+          document.getElementById("clientPanel").classList.remove("hidden");
+
+          listarPedidosCliente(cpf); // Carregar pedidos do cliente
+        } else {
+          alert("Por favor, insira um CPF válido.");
+        }
+      });
     });
 
     // Função para listar pedidos do banco
@@ -81,6 +97,31 @@
       });
     }
 
+    // Função para listar pedidos do cliente (após login de cliente)
+    async function listarPedidosCliente(cpf) {
+      const pedidosRef = collection(db, "pedidos");
+      const querySnapshot = await getDocs(pedidosRef);
+      const pedidoLista = document.getElementById("pedidoLista");
+      pedidoLista.innerHTML = ""; // Limpar a lista antes de adicionar os novos pedidos
+
+      querySnapshot.forEach((doc) => {
+        const pedido = doc.data();
+        if (pedido.cpf === cpf) {
+          const pedidoElement = document.createElement("div");
+          pedidoElement.classList.add("p-4", "bg-gray-800", "rounded-lg");
+
+          pedidoElement.innerHTML = `
+            <h3 class="font-bold">${pedido.titulo}</h3>
+            <p>Status: ${pedido.status}</p>
+            <p>Data de Entrega: ${pedido.dataEntrega}</p>
+            <p>Observações: ${pedido.observacoes}</p>
+          `;
+
+          pedidoLista.appendChild(pedidoElement);
+        }
+      });
+    }
+
     // Função para editar o status de um pedido
     window.editarStatus = async function(pedidoId) {
       const novoStatus = prompt("Digite o novo status (Ex: Em aberto, Finalizado, etc.):");
@@ -96,7 +137,6 @@
       }
     };
   </script>
-
 </head>
 <body class="bg-gray-900 text-white font-sans">
 
@@ -117,7 +157,25 @@
         </div>
         <button type="submit" class="btn-blue">Entrar como Admin</button>
       </form>
+
+      <hr class="my-6 border-gray-600">
+
+      <!-- Cliente -->
+      <form id="clientLoginForm" class="space-y-4">
+        <div>
+          <label class="block mb-1">CPF (Cliente)</label>
+          <input type="text" id="clientCPF" maxlength="14" placeholder="000.000.000-00" class="input" required>
+        </div>
+        <button type="submit" class="btn-green">Acessar Pedidos</button>
+      </form>
     </div>
+  </div>
+
+  <!-- Painel Cliente -->
+  <div id="clientPanel" class="hidden p-4">
+    <h2 class="text-2xl font-bold mb-4">Seus Pedidos</h2>
+    <div id="pedidoLista" class="grid gap-4"></div>
+    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
   </div>
 
   <!-- Painel Admin -->
