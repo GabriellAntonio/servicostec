@@ -69,23 +69,49 @@
     const pedidoForm = document.getElementById("pedidoForm");
     const lista = document.getElementById("listaPedidosAdmin");
 
-    async function listarPedidos() {
-      const snapshot = await getDocs(collection(db, "pedidos"));
-      lista.innerHTML = "";
-      snapshot.forEach(docSnap => {
-        const p = docSnap.data();
-        const div = document.createElement("div");
-        div.className = "p-4 bg-gray-800 rounded-lg";
-        div.innerHTML = `
-          <h3 class="font-bold">${p.titulo}</h3>
-          <p>CPF: ${p.cpf}</p>
-          <p>Status: ${p.status}</p>
-          <p>Entrega: ${p.dataEntrega}</p>
-          <p>Observações: ${p.observacoes}</p>
-        `;
-        lista.appendChild(div);
-      });
+    
+async function listarPedidos() {
+  const snapshot = await getDocs(collection(db, "pedidos"));
+  lista.innerHTML = "";
+  snapshot.forEach(docSnap => {
+    const p = docSnap.data();
+    const div = document.createElement("div");
+    div.className = "p-4 bg-gray-800 rounded-lg";
+
+    const h3 = document.createElement("h3");
+    h3.className = "font-bold";
+    h3.textContent = p.titulo;
+
+    const cpf = document.createElement("p");
+    cpf.textContent = "CPF: " + p.cpf;
+
+    const status = document.createElement("p");
+    status.textContent = "Status: " + p.status;
+
+    const entrega = document.createElement("p");
+    entrega.textContent = "Entrega: " + p.dataEntrega;
+
+    const obs = document.createElement("p");
+    obs.textContent = "Observações: " + (p.observacoes || "");
+
+    div.appendChild(h3);
+    div.appendChild(cpf);
+    div.appendChild(status);
+    div.appendChild(entrega);
+    div.appendChild(obs);
+
+    if (p.nota) {
+      const nota = document.createElement("p");
+      nota.className = "text-sm mt-1 text-white/80 italic";
+      nota.textContent = "Nota: " + p.nota;
+      div.appendChild(nota);
     }
+
+    lista.appendChild(div);
+  });
+}
+
+     
 
     pedidoForm.addEventListener("submit", async (e) => {
       e.preventDefault();
