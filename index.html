@@ -65,30 +65,61 @@
     const pedidoLista = document.getElementById("pedidoLista");
     let notaPedidoId = null;
 
-    async function listarPedidos() {
-      const snapshot = await getDocs(collection(db, "pedidos"));
-      const lista = document.getElementById("listaPedidosAdmin");
-      lista.innerHTML = "";
-      snapshot.forEach(docSnap => {
-        const p = docSnap.data();
-        let statusColor = "";
-        switch (p.status?.toLowerCase()) {
-          case "em aberto": statusColor = "text-green-400"; break;
-          case "desenvolvendo": statusColor = "text-yellow-400"; break;
-          case "finalizado": statusColor = "text-red-400"; break;
-          default: statusColor = "text-gray-400";
-        }
-        const div = document.createElement("div");
-        div.className = "p-4 bg-gray-800 rounded-lg mt-4";
-        div.innerHTML = `
-          <h3 class="font-bold">${p.titulo}</h3>
-          <p>CPF: ${p.cpf}</p>
-          <p>Status: <span class="${statusColor} font-semibold">${p.status}</span></p>
-          ${p.nota ? `<p class="italic text-white/70 mt-2">Nota: ${p.nota}</p>` : ""}
-          <button class="btn-blue mt-2" onclick="editarStatus('${docSnap.id}', '${p.status}')">Alterar Status</button>
-          <button class="btn-green mt-2 ml-2" onclick='abrirModalNota("${docSnap.id}", ${JSON.stringify(p.nota || "")})'>Editar Nota</button>
-        `;
-        lista.appendChild(div);
+    
+async function listarPedidos() {
+  const snapshot = await getDocs(collection(db, "pedidos"));
+  const lista = document.getElementById("listaPedidosAdmin");
+  lista.innerHTML = "";
+
+  snapshot.forEach(docSnap => {
+    const p = docSnap.data();
+    const div = document.createElement("div");
+    div.className = "p-4 bg-gray-800 rounded-lg mt-4";
+
+    const h3 = document.createElement("h3");
+    h3.className = "font-bold";
+    h3.textContent = p.titulo;
+
+    const cpf = document.createElement("p");
+    cpf.textContent = "CPF: " + p.cpf;
+
+    const status = document.createElement("p");
+    const statusSpan = document.createElement("span");
+    statusSpan.textContent = p.status;
+    statusSpan.className = "font-semibold";
+    switch (p.status?.toLowerCase()) {
+      case "em aberto": statusSpan.classList.add("text-green-400"); break;
+      case "desenvolvendo": statusSpan.classList.add("text-yellow-400"); break;
+      case "finalizado": statusSpan.classList.add("text-red-400"); break;
+      default: statusSpan.classList.add("text-gray-400");
+    }
+    status.innerHTML = "Status: ";
+    status.appendChild(statusSpan);
+
+    div.appendChild(h3);
+    div.appendChild(cpf);
+    div.appendChild(status);
+
+    if (p.nota) {
+      const nota = document.createElement("p");
+      nota.className = "italic text-white/70 mt-2";
+      nota.textContent = "Nota: " + p.nota;
+      div.appendChild(nota);
+    }
+
+    const btn1 = document.createElement("button");
+    btn1.textContent = "Alterar Status";
+    btn1.className = "btn-blue mt-2";
+    btn1.onclick = () => editarStatus(docSnap.id, p.status);
+    div.appendChild(btn1);
+
+    const btn2 = document.createElement("button");
+    btn2.textContent = "Editar Nota";
+    btn2.className = "btn-green mt-2 ml-2";
+    btn2.onclick = () => abrirModalNota(docSnap.id, p.nota || "");
+    div.appendChild(btn2);
+
+    lista.appendChild(div);
       });
     }
 
@@ -106,12 +137,14 @@
       document.getElementById("modalNota").classList.remove("hidden");
     };
 
-    document.getElementById("cancelarNota").addEventListener("click", () => {
+    const cancelarBtn = document.getElementById("cancelarNota");
+if (cancelarBtn) cancelarBtn.addEventListener("click", () => {
       document.getElementById("modalNota").classList.add("hidden");
       notaPedidoId = null;
     });
 
-    document.getElementById("salvarNota").addEventListener("click", async () => {
+    const salvarBtn = document.getElementById("salvarNota");
+if (salvarBtn) salvarBtn.addEventListener("click", async () => {
       const novaNota = document.getElementById("notaTexto").value;
       if (notaPedidoId !== null) {
         const pedidoRef = doc(db, "pedidos", notaPedidoId);
@@ -120,11 +153,6 @@
         notaPedidoId = null;
         listarPedidos();
         alert("Nota salva com sucesso!");
-      }
-    });
-
-     catch (err) {
-        alert("Erro no login: " + err.message);
       }
     });
 
@@ -162,10 +190,6 @@
         pedidoLista.appendChild(div);
       });
     });
-
-    );
   </script>
 </body>
 </html>
-
-  
