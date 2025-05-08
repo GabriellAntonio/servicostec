@@ -6,8 +6,63 @@
   <title>Painel Gabriel TEC</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="icon" href="/logo.ico" />
+  <style>
+    .input { width: 100%; padding: 0.5rem; border-radius: 0.375rem; background-color: #1f2937; border: 1px solid #374151; color: white; }
+    .btn-blue { background-color: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
+    .btn-green { background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
+    .btn-red { background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+  <div id="login" class="min-h-screen flex items-center justify-center">
+    <div class="bg-gray-800 p-6 rounded-lg w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-4 text-center">Login - Gabriel TEC</h2>
+      <form id="adminLoginForm" class="space-y-4">
+        <input type="email" id="adminEmail" placeholder="Email (Admin)" class="input" required>
+        <input type="password" id="adminPassword" placeholder="Senha" class="input" required>
+        <button type="submit" class="btn-blue w-full">Entrar como Admin</button>
+      </form>
+      <hr class="my-4 border-gray-600">
+      <form id="clientLoginForm" class="space-y-4">
+        <input type="text" id="clientCPF" maxlength="14" placeholder="Digite seu CPF" class="input" required>
+        <button type="submit" class="btn-green w-full">Ver meus pedidos</button>
+      </form>
+    </div>
+  </div>
 
-  <!-- Firebase SDK -->
+  <div id="clientPanel" class="hidden p-4">
+    <h2 class="text-2xl font-bold mb-4">Seus Pedidos</h2>
+    <div id="pedidoLista" class="grid gap-4"></div>
+    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
+  </div>
+
+  <div id="adminPanel" class="hidden p-4">
+    <h2 class="text-2xl font-bold mb-4">Novo Pedido</h2>
+    <form id="pedidoForm" class="grid gap-4 md:grid-cols-2">
+      <input type="text" id="titulo" placeholder="Título" class="input" required>
+      <input type="text" id="cpf" placeholder="CPF do cliente" class="input" required>
+      <input type="text" id="status" placeholder="Status" class="input" required>
+      <input type="date" id="dataEntrega" class="input">
+      <textarea id="observacoes" placeholder="Observações" class="input md:col-span-2" rows="3"></textarea>
+      <button type="submit" class="btn-blue md:col-span-2">Salvar Pedido</button>
+    </form>
+
+    <h2 class="text-2xl font-bold mt-6 mb-2">Pedidos Existentes</h2>
+    <div id="listaPedidosAdmin"></div>
+    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
+  </div>
+
+  <div id="modalNota" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+    <div class="bg-white text-black rounded-xl p-6 w-11/12 max-w-md shadow-lg">
+      <h2 class="text-xl font-bold mb-4">Editar Nota</h2>
+      <textarea id="notaTexto" class="w-full p-2 border rounded-md mb-4" rows="4" placeholder="Digite o diagnóstico..."></textarea>
+      <div class="flex justify-end gap-2">
+        <button id="cancelarNota" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancelar</button>
+        <button id="salvarNota" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -17,7 +72,7 @@
       apiKey: "AIzaSyDepprbeNpba8COCLSkAH0xXA3nIqvlUHg",
       authDomain: "painel-gabrieltec-6420b.firebaseapp.com",
       projectId: "painel-gabrieltec-6420b",
-      storageBucket: "painel-gabrieltec-6420b.firebasestorage.app",
+      storageBucket: "painel-gabrieltec-6420b.appspot.com",
       messagingSenderId: "919129799689",
       appId: "1:919129799689:web:b8a3fb4049cd201e7a0cd8"
     };
@@ -58,82 +113,84 @@
         const pedido = doc.data();
         const div = document.createElement("div");
         div.className = "p-4 bg-gray-800 rounded-lg";
-        // Cor dinâmica do status
-let statusColorClass = '';
-switch (pedido.status?.toLowerCase()) {
-  case 'em aberto':
-    statusColorClass = 'text-green-400';
-    break;
-  case 'em teste':
-  case 'desenvolvendo':
-    statusColorClass = 'text-yellow-400';
-    break;
-    case "desenvolvimento":
-        statusColor = "text-yellow-400";
-        break;
-  case 'entregue':
-  case 'finalizado':
-    statusColorClass = 'text-red-400';
-    break;
-  default:
-    statusColorClass = 'text-gray-400';
-}
-
-div.innerHTML = `
-  <h3 class="font-bold">${pedido.titulo}</h3>
-  <p>Status: <span class="${statusColorClass} font-semibold">${pedido.status}</span></p>
-  <p>Entrega: ${pedido.dataEntrega}</p>
-  <p>Observações: ${pedido.observacoes}</p>
-`;
-
+        let statusColorClass = '';
+        switch (pedido.status?.toLowerCase()) {
+          case 'em aberto': statusColorClass = 'text-green-400'; break;
+          case 'em teste':
+          case 'desenvolvendo': statusColorClass = 'text-yellow-400'; break;
+          case 'entregue':
+          case 'finalizado': statusColorClass = 'text-red-400'; break;
+          default: statusColorClass = 'text-gray-400';
+        }
+        div.innerHTML = `
+          <h3 class="font-bold">${pedido.titulo}</h3>
+          <p>Status: <span class="${statusColorClass} font-semibold">${pedido.status}</span></p>
+          <p>Entrega: ${pedido.dataEntrega}</p>
+          <p>Observações: ${pedido.observacoes}</p>
+        `;
         pedidoLista.appendChild(div);
       });
     });
 
- async function listarPedidos() {
-  const snapshot = await getDocs(collection(db, "pedidos"));
-  const lista = document.getElementById("listaPedidosAdmin");
-  lista.innerHTML = "";
-  snapshot.forEach(docSnap => {
-    const p = docSnap.data();
-
-    // Define a cor do status
-    let statusColor = "";
-    switch (p.status?.toLowerCase()) {
-      case "em aberto":
-        statusColor = "text-green-400";
-        break;
-      case "desenvolvendo":
-        statusColor = "text-yellow-400";
-        break;
-      case "finalizado":
-        statusColor = "text-red-400";
-        break;
-      default:
-        statusColor = "text-gray-400";
+    async function listarPedidos() {
+      const snapshot = await getDocs(collection(db, "pedidos"));
+      const lista = document.getElementById("listaPedidosAdmin");
+      lista.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const p = docSnap.data();
+        let statusColor = "";
+        switch (p.status?.toLowerCase()) {
+          case "em aberto": statusColor = "text-green-400"; break;
+          case "desenvolvendo": statusColor = "text-yellow-400"; break;
+          case "finalizado": statusColor = "text-red-400"; break;
+          default: statusColor = "text-gray-400";
+        }
+        const div = document.createElement("div");
+        div.className = "p-4 bg-gray-800 rounded-lg mt-4";
+        div.innerHTML = `
+          <h3 class="font-bold">${p.titulo}</h3>
+          <p>CPF: ${p.cpf}</p>
+          <p>Status: <span class="${statusColor} font-semibold">${p.status}</span></p>
+          ${p.nota ? `<p class="italic text-white/70 mt-2">Nota: ${p.nota}</p>` : ""}
+          <button class="btn-blue mt-2" onclick="editarStatus('${docSnap.id}', '${p.status}')">Alterar Status</button>
+          <button class="btn-green mt-2 ml-2" onclick="abrirModalNota('${docSnap.id}', ${JSON.stringify(p.nota || "")})">Editar Nota</button>
+        `;
+        lista.appendChild(div);
+      });
     }
 
-    const div = document.createElement("div");
-    div.className = "p-4 bg-gray-800 rounded-lg mt-4";
-    div.innerHTML = `
-      <h3 class="font-bold">${p.titulo}</h3>
-      <p>CPF: ${p.cpf}</p>
-      <p>Status: <span class="${statusColor} font-semibold">${p.status}</span></p>
-      <button class="btn-blue mt-2" onclick="editarStatus('${docSnap.id}')">Alterar Status</button>
-    `;
-    lista.appendChild(div);
-  });
-}
-
-
-    window.editarStatus = async function(id) {
-      const novo = prompt("Novo status:");
+    window.editarStatus = async function(id, statusAtual) {
+      const novo = prompt("Novo status:", statusAtual);
       if (!novo) return;
       const pedidoRef = doc(db, "pedidos", id);
       await updateDoc(pedidoRef, { status: novo });
-      alert("Status atualizado.");
       listarPedidos();
     };
+
+    let notaPedidoId = null;
+
+    window.abrirModalNota = function(id, notaAtual) {
+      notaPedidoId = id;
+      document.getElementById("notaTexto").value = notaAtual || "";
+      document.getElementById("modalNota").classList.remove("hidden");
+    };
+
+    document.getElementById("cancelarNota").addEventListener("click", () => {
+      document.getElementById("modalNota").classList.add("hidden");
+      notaPedidoId = null;
+    });
+
+    document.getElementById("salvarNota").addEventListener("click", async () => {
+      const novaNota = document.getElementById("notaTexto").value;
+      if (notaPedidoId !== null) {
+        const pedidoRef = doc(db, "pedidos", notaPedidoId);
+        await updateDoc(pedidoRef, { nota: novaNota });
+        document.getElementById("modalNota").classList.add("hidden");
+        notaPedidoId = null;
+        listarPedidos();
+        alert("Nota salva com sucesso!");
+      }
+    });
 
     pedidoForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -148,64 +205,5 @@ div.innerHTML = `
       pedidoForm.reset();
     });
   </script>
-  <style>
-    .input { width: 100%; padding: 0.5rem; border-radius: 0.375rem; background-color: #1f2937; border: 1px solid #374151; color: white; }
-    .btn-blue { background-color: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .btn-green { background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .btn-red { background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-  </style>
-</head>
-<body class="bg-gray-900 text-white">
-  <div id="login" class="min-h-screen flex items-center justify-center">
-    <div class="bg-gray-800 p-6 rounded-lg w-full max-w-md">
-      <h2 class="text-2xl font-bold mb-4 text-center">Login - Gabriel TEC</h2>
-
-      <form id="adminLoginForm" class="space-y-4">
-        <input type="email" id="adminEmail" placeholder="Email (Admin)" class="input" required>
-        <input type="password" id="adminPassword" placeholder="Senha" class="input" required>
-        <button type="submit" class="btn-blue w-full">Entrar como Admin</button>
-      </form>
-
-      <hr class="my-4 border-gray-600">
-
-      <form id="clientLoginForm" class="space-y-4">
-        <input type="text" id="clientCPF" maxlength="14" placeholder="Digite seu CPF" class="input" required>
-        <button type="submit" class="btn-green w-full">Ver meus pedidos</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="clientPanel" class="hidden p-4">
-    <h2 class="text-2xl font-bold mb-4">Seus Pedidos</h2>
-    <div id="pedidoLista" class="grid gap-4"></div>
-    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
-  </div>
-
-  <div id="adminPanel" class="hidden p-4">
-    <h2 class="text-2xl font-bold mb-4">Novo Pedido</h2>
-    <form id="pedidoForm" class="grid gap-4 md:grid-cols-2">
-      <input type="text" id="titulo" placeholder="Título" class="input" required>
-      <input type="text" id="cpf" placeholder="CPF do cliente" class="input" required>
-      <input type="text" id="status" placeholder="Status" class="input" required>
-      <input type="date" id="dataEntrega" class="input">
-      <textarea id="observacoes" placeholder="Observações" class="input md:col-span-2" rows="3"></textarea>
-      <button type="submit" class="btn-blue md:col-span-2">Salvar Pedido</button>
-    </form>
-
-    <h2 class="text-2xl font-bold mt-6 mb-2">Pedidos Existentes</h2>
-    <div id="listaPedidosAdmin"></div>
-    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
-  </div>
-  <!-- Modal de Edição de Nota -->
-<div id="modalNota" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-  <div class="bg-white text-black rounded-xl p-6 w-11/12 max-w-md shadow-lg">
-    <h2 class="text-xl font-bold mb-4">Editar Nota</h2>
-    <textarea id="notaTexto" class="w-full p-2 border rounded-md mb-4" rows="4" placeholder="Digite o diagnóstico..."></textarea>
-    <div class="flex justify-end gap-2">
-      <button id="cancelarNota" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancelar</button>
-      <button id="salvarNota" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
