@@ -191,6 +191,50 @@ if (salvarBtn) salvarBtn.addEventListener("click", async () => {
         pedidoLista.appendChild(div);
       });
     });
-  </script>
+  
+
+async function listarPedidosCliente(cpf) {
+  const lista = document.getElementById("listaPedidos");
+  lista.innerHTML = "";
+
+  const q = query(collection(db, "pedidos"), where("cpf", "==", cpf));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    lista.innerHTML = "<p class='text-center text-white/70'>Nenhum pedido encontrado.</p>";
+    return;
+  }
+
+  snapshot.forEach((docSnap) => {
+    const p = docSnap.data();
+    const div = document.createElement("div");
+    div.className = "p-4 bg-gray-800 rounded-lg mb-4";
+
+    const h3 = document.createElement("h3");
+    h3.className = "font-bold text-white";
+    h3.textContent = p.titulo;
+
+    const status = document.createElement("p");
+    status.className = "text-white/80";
+    status.innerHTML = "Status: <span class='text-green-400 font-semibold'>" + p.status + "</span>";
+
+    const entrega = document.createElement("p");
+    entrega.className = "text-white/70";
+    entrega.textContent = "Entrega: " + (p.dataEntrega || "não definida");
+
+    const obs = document.createElement("p");
+    obs.className = "text-white/60 italic mt-1";
+    obs.textContent = "Observações: " + (p.observacoes || "");
+
+    div.appendChild(h3);
+    div.appendChild(status);
+    div.appendChild(entrega);
+    div.appendChild(obs);
+
+    lista.appendChild(div);
+  });
+}
+
+</script>
 </body>
 </html>
