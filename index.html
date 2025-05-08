@@ -33,9 +33,6 @@
       <input type="text" id="clientCPF" maxlength="14" placeholder="Digite seu CPF" class="input" required>
       <button type="submit" class="btn-green">Ver meus pedidos</button>
     </form>
-  </div>
-
-</div>
 </div>
 
 
@@ -43,10 +40,6 @@
     <h2 class="text-2xl font-bold mb-4">Seus Pedidos</h2>
     <div id="pedidoLista" class="grid gap-4"></div>
     <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
-  </div>
-
-  
-    </div>
   </div>
 
   <script type="module">
@@ -68,11 +61,8 @@
     const db = getFirestore(app);
 
     const login = document.getElementById("login");
-    const adminPanel = document.getElementById("adminPanel");
     const clientPanel = document.getElementById("clientPanel");
     const pedidoLista = document.getElementById("pedidoLista");
-    const pedidoForm = document.getElementById("pedidoForm");
-
     let notaPedidoId = null;
 
     async function listarPedidos() {
@@ -133,16 +123,7 @@
       }
     });
 
-    document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("adminEmail").value;
-      const password = document.getElementById("adminPassword").value;
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        login.classList.add("hidden");
-        adminPanel.classList.remove("hidden");
-        listarPedidos();
-      } catch (err) {
+     catch (err) {
         alert("Erro no login: " + err.message);
       }
     });
@@ -182,18 +163,7 @@
       });
     });
 
-    pedidoForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const titulo = document.getElementById("titulo").value;
-      const cpf = document.getElementById("cpf").value;
-      const status = document.getElementById("status").value;
-      const dataEntrega = document.getElementById("dataEntrega").value;
-      const observacoes = document.getElementById("observacoes").value;
-      await addDoc(collection(db, "pedidos"), { titulo, cpf, status, dataEntrega, observacoes });
-      alert("Pedido salvo.");
-      listarPedidos();
-      pedidoForm.reset();
-    });
+    );
   </script>
 </body>
 </html>
