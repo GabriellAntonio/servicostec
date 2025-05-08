@@ -187,7 +187,7 @@
   <p>Status: <span class="${statusColorClass} font-semibold">${pedido.status}</span></p>
   <p>Entrega: ${pedido.dataEntrega}</p>
   <p>Observações: ${pedido.observacoes}</p>
-  ${pedido.nota ? `<p class="mt-2 italic text-white/70">Nota: ${pedido.nota}</p>` : ""}
+  ${pedido.nota ? `<p class="mt-2 italic"><span style="color: #a3e635; font-weight: 600;">Nota:</span> <span style="color: rgba(255,255,255,0.7);">${pedido.nota}</span></p>` : ""}
 `;
 
         pedidoLista.appendChild(div);
