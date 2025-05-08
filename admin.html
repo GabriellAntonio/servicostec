@@ -116,7 +116,7 @@ async function listarPedidos() {
     pedidoForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const titulo = document.getElementById("titulo").value;
-      const cpf = document.getElementById("cpf").value;
+      const cpf = document.getElementById("cpf").value.replace(/[^\d]/g, "");
       const status = document.getElementById("status").value;
       const dataEntrega = document.getElementById("dataEntrega").value;
       const observacoes = document.getElementById("observacoes").value;
