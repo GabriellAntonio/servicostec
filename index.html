@@ -156,9 +156,10 @@ if (salvarBtn) salvarBtn.addEventListener("click", async () => {
       }
     });
     
+
     document.getElementById("clientLoginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const cpf = document.getElementById("clientCPF").value;
+      const cpf = document.getElementById("clientCPF").value.replace(/[^\d]/g, "");
       const q = query(collection(db, "pedidos"), where("cpf", "==", cpf));
       const snapshot = await getDocs(q);
       login.classList.add("hidden");
