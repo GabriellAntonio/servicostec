@@ -64,7 +64,6 @@
   </div>
 
   <script type="module">
-window.addEventListener("DOMContentLoaded", () => {
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
     import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -87,6 +86,66 @@ window.addEventListener("DOMContentLoaded", () => {
     const clientPanel = document.getElementById("clientPanel");
     const pedidoLista = document.getElementById("pedidoLista");
     const pedidoForm = document.getElementById("pedidoForm");
+
+    let notaPedidoId = null;
+
+    async function listarPedidos() {
+      const snapshot = await getDocs(collection(db, "pedidos"));
+      const lista = document.getElementById("listaPedidosAdmin");
+      lista.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const p = docSnap.data();
+        let statusColor = "";
+        switch (p.status?.toLowerCase()) {
+          case "em aberto": statusColor = "text-green-400"; break;
+          case "desenvolvendo": statusColor = "text-yellow-400"; break;
+          case "finalizado": statusColor = "text-red-400"; break;
+          default: statusColor = "text-gray-400";
+        }
+        const div = document.createElement("div");
+        div.className = "p-4 bg-gray-800 rounded-lg mt-4";
+        div.innerHTML = `
+          <h3 class="font-bold">${p.titulo}</h3>
+          <p>CPF: ${p.cpf}</p>
+          <p>Status: <span class="${statusColor} font-semibold">${p.status}</span></p>
+          ${p.nota ? `<p class="italic text-white/70 mt-2">Nota: ${p.nota}</p>` : ""}
+          <button class="btn-blue mt-2" onclick="editarStatus('${docSnap.id}', '${p.status}')">Alterar Status</button>
+          <button class="btn-green mt-2 ml-2" onclick='abrirModalNota("${docSnap.id}", ${JSON.stringify(p.nota || "")})'>Editar Nota</button>
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    window.editarStatus = async function(id, statusAtual) {
+      const novo = prompt("Novo status:", statusAtual);
+      if (!novo) return;
+      const pedidoRef = doc(db, "pedidos", id);
+      await updateDoc(pedidoRef, { status: novo });
+      listarPedidos();
+    };
+
+    window.abrirModalNota = function(id, notaAtual) {
+      notaPedidoId = id;
+      document.getElementById("notaTexto").value = notaAtual || "";
+      document.getElementById("modalNota").classList.remove("hidden");
+    };
+
+    document.getElementById("cancelarNota").addEventListener("click", () => {
+      document.getElementById("modalNota").classList.add("hidden");
+      notaPedidoId = null;
+    });
+
+    document.getElementById("salvarNota").addEventListener("click", async () => {
+      const novaNota = document.getElementById("notaTexto").value;
+      if (notaPedidoId !== null) {
+        const pedidoRef = doc(db, "pedidos", notaPedidoId);
+        await updateDoc(pedidoRef, { nota: novaNota });
+        document.getElementById("modalNota").classList.add("hidden");
+        notaPedidoId = null;
+        listarPedidos();
+        alert("Nota salva com sucesso!");
+      }
+    });
 
     document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -124,73 +183,15 @@ window.addEventListener("DOMContentLoaded", () => {
           default: statusColorClass = 'text-gray-400';
         }
         div.innerHTML = `
-          <h3 class="font-bold">${pedido.titulo}</h3>
-          <p>Status: <span class="${statusColorClass} font-semibold">${pedido.status}</span></p>
-          <p>Entrega: ${pedido.dataEntrega}</p>
-          <p>Observações: ${pedido.observacoes}</p>
-        `;
+  <h3 class="font-bold">${pedido.titulo}</h3>
+  <p>Status: <span class="${statusColorClass} font-semibold">${pedido.status}</span></p>
+  <p>Entrega: ${pedido.dataEntrega}</p>
+  <p>Observações: ${pedido.observacoes}</p>
+  ${pedido.nota ? `<p class="mt-2 italic text-white/70">Nota: ${pedido.nota}</p>` : ""}
+`;
+
         pedidoLista.appendChild(div);
       });
-    });
-
-    async function listarPedidos() {
-      const snapshot = await getDocs(collection(db, "pedidos"));
-      const lista = document.getElementById("listaPedidosAdmin");
-      lista.innerHTML = "";
-      snapshot.forEach(docSnap => {
-        const p = docSnap.data();
-        let statusColor = "";
-        switch (p.status?.toLowerCase()) {
-          case "em aberto": statusColor = "text-green-400"; break;
-          case "desenvolvendo": statusColor = "text-yellow-400"; break;
-          case "finalizado": statusColor = "text-red-400"; break;
-          default: statusColor = "text-gray-400";
-        }
-        const div = document.createElement("div");
-        div.className = "p-4 bg-gray-800 rounded-lg mt-4";
-        div.innerHTML = `
-          <h3 class="font-bold">${p.titulo}</h3>
-          <p>CPF: ${p.cpf}</p>
-          <p>Status: <span class="${statusColor} font-semibold">${p.status}</span></p>
-          ${p.nota ? `<p class="italic text-white/70 mt-2">Nota: ${p.nota}</p>` : ""}
-          <button class="btn-blue mt-2" onclick="editarStatus('${docSnap.id}', '${p.status}')">Alterar Status</button>
-          <button class="btn-green mt-2 ml-2" onclick="abrirModalNota('${docSnap.id}', ${JSON.stringify(p.nota || "")})">Editar Nota</button>
-        `;
-        lista.appendChild(div);
-      });
-    }
-
-    window.editarStatus = async function(id, statusAtual) {
-      const novo = prompt("Novo status:", statusAtual);
-      if (!novo) return;
-      const pedidoRef = doc(db, "pedidos", id);
-      await updateDoc(pedidoRef, { status: novo });
-      listarPedidos();
-    };
-
-    let notaPedidoId = null;
-
-    window.abrirModalNota = function(id, notaAtual) {
-      notaPedidoId = id;
-      document.getElementById("notaTexto").value = notaAtual || "";
-      document.getElementById("modalNota").classList.remove("hidden");
-    };
-
-    document.getElementById("cancelarNota").addEventListener("click", () => {
-      document.getElementById("modalNota").classList.add("hidden");
-      notaPedidoId = null;
-    });
-
-    document.getElementById("salvarNota").addEventListener("click", async () => {
-      const novaNota = document.getElementById("notaTexto").value;
-      if (notaPedidoId !== null) {
-        const pedidoRef = doc(db, "pedidos", notaPedidoId);
-        await updateDoc(pedidoRef, { nota: novaNota });
-        document.getElementById("modalNota").classList.add("hidden");
-        notaPedidoId = null;
-        listarPedidos();
-        alert("Nota salva com sucesso!");
-      }
     });
 
     pedidoForm.addEventListener("submit", async (e) => {
@@ -205,7 +206,6 @@ window.addEventListener("DOMContentLoaded", () => {
       listarPedidos();
       pedidoForm.reset();
     });
-  });
-</script>
+  </script>
 </body>
 </html>
