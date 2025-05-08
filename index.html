@@ -45,30 +45,7 @@
     <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
   </div>
 
-  <div id="adminPanel" class="hidden p-4">
-    <h2 class="text-2xl font-bold mb-4">Novo Pedido</h2>
-    <form id="pedidoForm" class="grid gap-4 md:grid-cols-2">
-      <input type="text" id="titulo" placeholder="Título" class="input" required>
-      <input type="text" id="cpf" placeholder="CPF do cliente" class="input" required>
-      <input type="text" id="status" placeholder="Status" class="input" required>
-      <input type="date" id="dataEntrega" class="input">
-      <textarea id="observacoes" placeholder="Observações" class="input md:col-span-2" rows="3"></textarea>
-      <button type="submit" class="btn-blue md:col-span-2">Salvar Pedido</button>
-    </form>
-
-    <h2 class="text-2xl font-bold mt-6 mb-2">Pedidos Existentes</h2>
-    <div id="listaPedidosAdmin"></div>
-    <button onclick="location.reload()" class="btn-red mt-4">Sair</button>
-  </div>
-
-  <div id="modalNota" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-    <div class="bg-white text-black rounded-xl p-6 w-11/12 max-w-md shadow-lg">
-      <h2 class="text-xl font-bold mb-4">Editar Nota</h2>
-      <textarea id="notaTexto" class="w-full p-2 border rounded-md mb-4" rows="4" placeholder="Digite o diagnóstico..."></textarea>
-      <div class="flex justify-end gap-2">
-        <button id="cancelarNota" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancelar</button>
-        <button id="salvarNota" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
-      </div>
+  
     </div>
   </div>
 
