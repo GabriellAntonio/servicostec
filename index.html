@@ -64,6 +64,7 @@
   </div>
 
   <script type="module">
+window.addEventListener("DOMContentLoaded", () => {
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
     import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -204,6 +205,7 @@
       listarPedidos();
       pedidoForm.reset();
     });
-  </script>
+  });
+</script>
 </body>
 </html>
