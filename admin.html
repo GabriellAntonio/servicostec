@@ -64,7 +64,7 @@
       const password = document.getElementById("adminPassword").value;
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = "/"; // Redireciona para o painel principal
+        window.location.href = "/admin-painel.html"; // Redireciona para o painel principal
       } catch (err) {
         alert("Erro no login: " + err.message);
       }
