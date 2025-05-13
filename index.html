@@ -109,7 +109,7 @@
         const p = docSnap.data();
         let statusColor = "";
         
-      switch ((p.status || "").toLowerCase()) {
+      switch ((pedido.status || "").toLowerCase()) {
         case "em análise": statusColor = "text-yellow-400"; break;
         case "em reparo": statusColor = "text-blue-400"; break;
         case "pronto para retirada": statusColor = "text-green-400"; break;
@@ -122,7 +122,7 @@
         div.innerHTML = `
           <h3 class="font-bold">${p.titulo}</h3>
           <p>CPF: ${p.cpf}</p>
-          <p>Status: <span class="${statusColor} font-semibold">${p.status}</span></p>
+          <p>Status: <span class="${statusColorClass} font-semibold">${p.status}</span></p>
           ${p.nota ? `<p class="italic text-white/70 mt-2">Nota: ${p.nota}</p>` : ""}
           <button class="btn-blue mt-2" onclick="editarStatus('${docSnap.id}', '${p.status}')">Alterar Status</button>
           <button class="btn-green mt-2 ml-2" onclick='abrirModalNota("${docSnap.id}", ${JSON.stringify(p.nota || "")})'>Editar Nota</button>
@@ -189,14 +189,15 @@
         const div = document.createElement("div");
         div.className = "p-4 bg-gray-800 rounded-lg";
         let statusColorClass = '';
-        
-      switch ((p.status || "").toLowerCase()) {
-        case "em análise": statusColor = "text-yellow-400"; break;
-        case "em reparo": statusColor = "text-blue-400"; break;
-        case "pronto para retirada": statusColor = "text-green-400"; break;
-        case "sem solução": statusColor = "text-red-400"; break;
-        default: statusColor = "text-gray-400";
-      }
+
+		switch ((pedido.status || "").toLowerCase()) {
+		  case "em análise": statusColorClass = "text-yellow-400"; break;
+		  case "em reparo": statusColorClass = "text-blue-400"; break;
+		  case "pronto para retirada": statusColorClass = "text-green-400"; break;
+		  case "sem solução": statusColorClass = "text-red-400"; break;
+		  default: statusColorClass = "text-gray-400";
+		}
+
     
         div.innerHTML = `
   <h3 class="font-bold">${pedido.titulo}</h3>
